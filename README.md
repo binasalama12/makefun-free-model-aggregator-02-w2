@@ -26,9 +26,11 @@ an answer:
   error, unparseable body) benches that model for a fixed span counted
   in client requests — never in wall-clock seconds — so later prompts
   stop paying calls to a model that just refused, and a replay of the
-  same trial walks the exact same path. If every capable model is
-  benched, the full capable list is used again as a last resort rather
-  than stranding the request.
+  same trial walks the exact same path. One deliberate exception: a
+  successful call is proof of recovery, so it clears the model's
+  benching at once instead of letting a stale refusal outlive the
+  recovery. If every capable model is benched, the full capable list
+  is used again as a last resort rather than stranding the request.
 - **A visible trail.** When a prompt is served after one or more
   refusals, the final response carries an
   `x-makefun-upstream-failures` header: a JSON array (max 8) of

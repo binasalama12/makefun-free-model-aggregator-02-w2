@@ -11,6 +11,13 @@
 // dipakai router sebagai pemecah seri: di antara model ber-rating sama,
 // yang paling sedikit didial didahulukan, supaya beban menyebar dan model
 // populer tidak habis kuotanya lebih dulu.
+//
+// Satu pengecualian yang disengaja: keberhasilan MEMBATALKAN cooldown.
+// Panggilan yang dijawab OK adalah bukti model sudah pulih, jadi catatan
+// penolakan lamanya dibuang seketika dan model kembali ke rotasi pada
+// request berikutnya — ia tidak menunggu sisa rentang tetapnya habis
+// hanya karena penolakan yang lebih tua. Rentang tetap tetap berlaku
+// penuh bagi model yang belum membuktikan pemulihan apa pun.
 
 /** Berapa request klien berikutnya yang dilewati model sesudah menolak. */
 export const COOLDOWN_SPAN_REQUESTS = 2;
@@ -39,9 +46,13 @@ export class CooldownLedger {
     this.#lastRefusalAt.set(modelId, ordinal);
   }
 
-  /** Mencatat keberhasilan. Versi awal: catatan penolakan dibiarkan utuh. */
-  noteSuccess(_modelId: string): void {
-    // Sengaja kosong di versi awal — lihat riwayat commit untuk revisinya.
+  /**
+   * Mencatat keberhasilan: model terbukti pulih, jadi catatan penolakan
+   * terakhirnya dibuang dan cooldown-nya berakhir seketika, berapa pun
+   * sisa rentang tetapnya.
+   */
+  noteSuccess(modelId: string): void {
+    this.#lastRefusalAt.delete(modelId);
   }
 
   /** Total panggilan ke model ini sejauh trial berjalan. */
